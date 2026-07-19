@@ -219,7 +219,7 @@ function getTaskTime(i){return db().entries.filter(e=>e.taskId===i).reduce((s,e)
 function getSetTime(i){const d=db();const ts=new Set(d.tasks.filter(t=>t.setId===i).map(t=>t.id));return d.entries.filter(e=>ts.has(e.taskId)).reduce((s,e)=>s+e.duration,0)}
 function getAllTime(){return db().entries.reduce((s,e)=>s+e.duration,0)}
 function fmtTime(s){if(!s||s<0)return'0:00';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),se=s%60;return h>0?h+':'+String(m).padStart(2,'0')+':'+String(se).padStart(2,'0'):String(m)+':'+String(se).padStart(2,'0')}
-function fmtTimeLong(s){if(!s||s<0)return'零分钟';const h=Math.floor(s/3600),m=Math.round((s%3600)/60);return(h>0?h+'小时':'')+(m>0?m+'分钟':'')||'零分钟'}
+function fmtTimeLong(s){if(!s||s<0)return'0秒';const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),se=s%60;let r='';if(h>0)r+=h+'小时';if(m>0)r+=m+'分钟';if(se>0||r==='')r+=se+'秒';return r}
 
 /* State */
 let state={nav:'tasks',subNav:'today',selectedSetId:null,filterDate:today(),activeTimer:null,statsPeriod:'week',statsDate:today(),statsChartMode:'set',dnd:false};
