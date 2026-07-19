@@ -307,7 +307,7 @@ function mainBody(){
 
 /* Task Body */
 function taskBody(){
-  const d=db();var dateFilter=state.subNav==='today'?today():(state.subNav==='all'?state.filterDate:null);var taskFilter=null;
+  const d=db();var dateFilter=state.subNav==='today'?today():null;var taskFilter=null;
   if(state.subNav==='done'){taskFilter=function(t){return t.completed}}if(state.subNav==='set'&&state.selectedSetId){taskFilter=function(t){return t.setId===state.selectedSetId}}
   var tasks=d.tasks.filter(function(t){
     if(taskFilter&&!taskFilter(t))return false;
