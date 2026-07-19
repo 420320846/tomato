@@ -280,7 +280,7 @@ function sidebar(){
     h('div',{className:'sidebar-list'},d.sets.map(function(s){return h('div',{className:'sidebar-item'+(state.selectedSetId===s.id?' active':'')+'',onClick:function(){state.selectedSetId=s.id;state.nav='tasks';state.subNav='set';re()}},h('span',{className:'name'},s.name),h('span',{className:'badge'},String((function(t,sid){var td=today();return t.filter(function(x){return x.setId===sid&&!x.completed&&!(x.recurrence&&x.date>td)}).length})(d.tasks,s.id))),h('button',{className:'del-btn',onClick:function(e){e.stopPropagation();if(confirm('删除「'+s.name+'」及其中所有任务？')){deleteSet(s.id);re()}}},_s(S.trash)))})),
     h('div',{className:'sidebar-footer'},
       h('div',{className:'stats-line'},'总计 '+fmtTimeLong(total)),
-      h('button',{className:'btn-secondary btn-sm',style:'width:100%',onClick:showCreateSetModal},_s(S.plus),'新建任务集')));
+      h('button',{className:'btn-secondary btn-sm',style:'width:100%',onClick:showCreateSetModal},_s(S.plus),'新建任务集'),h('input',{type:'file',id:'importFile',accept:'.json',style:'display:none',onChange:importData}),h('div',{style:'display:flex;gap:4px;margin-top:6px'},h('button',{className:'btn-ghost btn-sm',style:'flex:1;font-size:11px',onClick:exportData},'导出数据'),h('button',{className:'btn-ghost btn-sm',style:'flex:1;font-size:11px',onClick:function(){document.getElementById('importFile').click()}},'导入数据'))));;
 }
 
 /* Main Header */
