@@ -321,7 +321,17 @@ function taskBody(){
     if(a.priority!==b.priority)return b.priority-a.priority;
     return a.updatedAt>b.updatedAt?-1:1
   });
-  if(!tasks.length){return h('div',{className:'empty-state'},_s(S.check),h('p',null,state.subNav==='done'?'暂无已完成任务':'暂无任务，点击上方按钮新建'))}
+  if(!tasks.length){return h('div',{className:'empty-state'},_s(S.check),h('p',null,state.subNav==='done'?'暂无已完成任务':'暂无任务'))}
+  if(state.subNav==='all'&&!state.selectedSetId){
+    var groups={};tasks.forEach(function(t){var gid=t.setId||'__noset__';if(!groups[gid])groups[gid]=[];groups[gid].push(t)});
+    var gl=h('div',{className:'task-list'});
+    Object.keys(groups).sort(function(a,b){if(a==='__noset__')return 1;if(b==='__noset__')return -1;var sa=d.sets.find(function(x){return x.id===a});var sb=d.sets.find(function(x){return x.id===b});return(sa?sa.name:'').localeCompare(sb?sb.name:'')}).forEach(function(gid){
+      var stks=groups[gid];var set=d.sets.find(function(x){return x.id===gid});
+      if(set){gl.appendChild(h('div',{style:'padding:12px 0 6px;margin-top:6px;font-size:14px;font-weight:600;color:var(--text-secondary);border-bottom:1px solid var(--border)'},set.name))}
+      stks.forEach(function(t){gl.appendChild(taskCard(t,d))})
+    });
+    return gl
+  }
   return h('div',{className:'task-list'},tasks.map(function(t){return taskCard(t,d)}))
 }
 
