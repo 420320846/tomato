@@ -429,7 +429,7 @@ function showTaskModal(task){
   o.appendChild(m);document.body.appendChild(o);setTimeout(function(){titleInp.focus()},100)
 }
 /* Stats Body */
-var _chart=null;
+var _chart=null,_barChart=null;
 function statsBody(){
   var c=h('div',{style:'max-width:800px'});var d=db();var period=state.statsPeriod;var refDate=new Date(state.statsDate);
   var range={start:null,end:null};
@@ -483,20 +483,15 @@ function statsBody(){
       for(var mi=1;mi<=12;mi++){var tot=yMonths[mi];var min=Math.round(tot/60);var pct=Math.round(min/Math.max(1,Math.round(yMax/60))*100);var th=Math.floor(tot/3600);var tm=Math.floor((tot%3600)/60);var tss=tot%60;var ts=(th>0?th+'h ':'')+(tm>0?tm+'m ':'')+tss+'s';var row=h('div',{style:'display:flex;align-items:center;gap:8px'});row.appendChild(h('span',{style:'width:36px;font-size:12px;color:var(--text-secondary);text-align:right'},mi+'\u6708'));row.appendChild(h('div',{style:'flex:1;height:18px;background:var(--bg);border-radius:4px;overflow:hidden'},h('div',{style:'height:100%;width:'+pct+'%;background:#8b5cf6;border-radius:4px;transition:width 0.3s'})));row.appendChild(h('span',{style:'width:80px;font-size:12px;text-align:right'},ts));yc.appendChild(row)}
       c.appendChild(yc);
     }
-    var hbToday=entries;
-    if(hbToday.length>0){
+    if(period==="day"&&entries.length>0){
       var hData={};for(var hI=0;hI<24;hI++)hData[hI]=0;
-      hbToday.forEach(function(e){var st=new Date(e.startTime),en=new Date(e.endTime);var sh=st.getHours(),eh=en.getHours(),dur=e.duration/60;if(sh===eh){hData[sh]+=dur}else{var sm=st.getMinutes(),em=en.getMinutes()||60;hData[sh]+=60-sm;for(var xh=sh+1;xh<eh;xh++)hData[xh]+=60;hData[eh]+=em}});
-      var hbMax=Math.max(1,Math.max.apply(null,Object.values(hData)));
-      c.appendChild(h('h4',{style:'font-size:14px;font-weight:600;margin-bottom:10px;margin-top:20px'},'\u4e13\u6ce8\u65f6\u6bb5\u5206\u5e03'));
-      var hbC=h('div',{style:'display:flex;align-items:flex-end;gap:2px;height:100px;padding:6px 0;border-bottom:1px solid var(--border)'});
-      for(var hI=0;hI<24;hI++){var hm=Math.round(hData[hI]);var pc=hm/hbMax;var bh=Math.max(2,Math.round(pc*96));var bcg=hm>0?'var(--accent)':'var(--bg)';hbC.appendChild(h('div',{style:'flex:1;height:'+bh+'px;background:'+bcg+';border-radius:2px 2px 0 0;cursor:pointer;min-width:4px',title:String(hI)+':00 - '+hm+'分钟'}))}
-      c.appendChild(hbC);
-      var hl=h('div',{style:'display:flex;gap:2px;margin-top:2px'});for(var hI=0;hI<24;hI+=4){hl.appendChild(h('div',{style:'flex:4;text-align:center;font-size:9px;color:var(--text-secondary)'},String(hI)+':00'))}c.appendChild(hl);
-    }
-    var tlE=entries;
-    if(tlE.length>0){
-      tlE.sort(function(a,b){return a.startTime-b.startTime});
+      entries.forEach(function(e){var st=new Date(e.startTime),en=new Date(e.endTime);var sh=st.getHours(),eh=en.getHours(),dur=e.duration/60;if(sh===eh){hData[sh]+=dur}else{var sm=st.getMinutes(),em=en.getMinutes()||60;hData[sh]+=60-sm;for(var xh=sh+1;xh<eh;xh++)hData[xh]+=60;hData[eh]+=em}});
+      c.appendChild(h("h4",{style:"font-size:14px;font-weight:600;margin-bottom:10px;margin-top:20px"},"\u4e13\u6ce8\u65f6\u6bb5\u5206\u5e03"));
+      var hbC=h("div",{className:"chart-wrap",style:"max-width:100%"});
+      var hbCanvas=h("canvas");hbC.appendChild(hbCanvas);c.appendChild(hbC);
+      setTimeout(function(){var ac=getComputedStyle(document.documentElement).getPropertyValue("--accent").trim()||"#e74c3c";if(_barChart)_barChart.destroy();var hLbls=[];for(var hI=0;hI<24;hI++)hLbls.push(hI+":00");_barChart=new Chart(hbCanvas.getContext("2d"),{type:"bar",data:{labels:hLbls,datasets:[{data:Object.values(hData).map(function(m){return Math.round(m)}),backgroundColor:ac,borderRadius:4}]},options:{responsive:true,maintainAspectRatio:true,scales:{y:{beginAtZero:true,grid:{display:false},ticks:{stepSize:30}},x:{grid:{display:false}}},plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return ctx.parsed.y+"\u5206\u949f"}}}}}})},100)
+    }if(period==="day"&&entries.length>0){
+      var tlE=entries.slice().sort(function(a,b){return a.startTime-b.startTime});
       c.appendChild(h('h4',{style:'font-size:14px;font-weight:600;margin-bottom:10px;margin-top:20px'},'\u65f6\u95f4\u8f74'));
       var tlC=h('div',{style:'position:relative;padding-left:80px;min-height:50px'});
       tlC.appendChild(h('div',{style:'position:absolute;left:72px;top:0;bottom:8px;width:2px;background:var(--border);z-index:0'}));
