@@ -201,7 +201,7 @@ function createTask(setId,title,opts){
   save(d);return d}
 function updateTask(i,upd){const d=db();const t=d.tasks.find(x=>x.id===i);if(t){Object.assign(t,upd);t.updatedAt=Date.now();save(d)}return d}
 function deleteTask(i){const d=db();d.tasks=d.tasks.filter(x=>x.id!==i);d.subTasks=d.subTasks.filter(x=>x.taskId!==i);d.entries=d.entries.filter(x=>x.taskId!==i);save(d);return d}
-function toggleComplete(i){const d=db();const t=d.tasks.find(x=>x.id===i);if(!t)return d;t.completed=!t.completed;t.completedAt=t.completed?Date.now():null;t.updatedAt=Date.now();if(t.completed&&t.recurrence){const next=genNextDate(t.recurrence,t.date);if(next&&!d.tasks.find(x=>x.title===t.title&&x.setId===t.setId&&!x.completed&&x.date===next)){d.tasks.push({id:id(),setId:t.setId,title:t.title,notes:t.notes,priority:t.priority,tags:t.tags,date:next,completed:false,completedAt:null,createdAt:Date.now(),updatedAt:Date.now(),recurrence:t.recurrence})}}save(d);return d}
+function toggleComplete(i){const d=db();const t=d.tasks.find(x=>x.id===i);if(!t)return d;if(!t.completed&&state.activeTimer&&state.activeTimer.taskId===i){var at=state.activeTimer;clearInterval(at.iterval);var now=Date.now();var sec=Math.round(((at.paused?at.elapsed:at.elapsed+(now-at.lastTick)))/1000);if(sec>=1){addEntry(at.taskId,at.startTime,now)}state.activeTimer=null}t.completed=!t.completed;t.completedAt=t.completed?Date.now():null;t.updatedAt=Date.now();if(t.completed&&t.recurrence){const next=genNextDate(t.recurrence,t.date);if(next&&!d.tasks.find(x=>x.title===t.title&&x.setId===t.setId&&!x.completed&&x.date===next)){d.tasks.push({id:id(),setId:t.setId,title:t.title,notes:t.notes,priority:t.priority,tags:t.tags,date:next,completed:false,completedAt:null,createdAt:Date.now(),updatedAt:Date.now(),recurrence:t.recurrence})}}save(d);return d}
 function genNextDate(rec,curDate){
   const d=new Date(curDate);const y=d.getFullYear(),m=d.getMonth(),dd=d.getDate();function _ld(dt){return dt.getFullYear()+'-'+String(dt.getMonth()+1).padStart(2,'0')+'-'+String(dt.getDate()).padStart(2,'0')};
   if(rec.type==='daily'){const n=new Date(y,m,dd+1);return _ld(n)}
@@ -337,7 +337,7 @@ function taskCard(t,d){
   content.appendChild(h('div',{className:'task-title',onClick:function(){showTaskModal(t)}},t.title));
   if(t.notes){content.appendChild(h('div',{className:'task-notes'},t.notes))}
   var meta=h('div',{className:'task-meta'});
-  if(t.priority>0){meta.appendChild(h('span',{className:'tag '+(t.priority===1?'tag-low':t.priority===2?'tag-medium':'tag-high')},'P'+t.priority))}
+  if(t.priority>0){meta.appendChild(h('span',{className:'tag '+(t.priority===1?'tag-low':t.priority===2?'tag-medium':'tag-high')},{1:'低',2:'中',3:'高'}[t.priority]))}
   if(t.tags&&t.tags.length){t.tags.forEach(function(g){meta.appendChild(h('span',{className:'tag tag-label'},g))})}
   if(t.recurrence){meta.appendChild(h('span',{className:'recur-icon'},_s(S.repeat)))}
   var set=d.sets.find(function(s){return s.id===t.setId});
@@ -351,7 +351,7 @@ function taskCard(t,d){
   if(isTimer){
     if(state.activeTimer.paused){actions.appendChild(h('button',{className:'btn-start btn-sm',onClick:function(){resumeTimer()}},_s(S.play)))}else{actions.appendChild(h('button',{className:'btn-pause btn-sm',onClick:function(){pauseTimer()}},_s(S.pause)))}
     actions.appendChild(h('button',{className:'btn-stop btn-sm',onClick:function(){stopTimer()}},_s(S.stop)))
-  }else{actions.appendChild(h('button',{className:'btn-start btn-sm',onClick:function(){startTimer(t.id)}},_s(S.play)))}
+  }else if(!t.completed){actions.appendChild(h('button',{className:'btn-start btn-sm',onClick:function(){startTimer(t.id)}},_s(S.play)))}
   actions.appendChild(h('button',{className:'btn-ghost btn-sm',onClick:function(){showTaskModal(t)}},_s(S.edit)));actions.appendChild(h('button',{className:'btn-ghost btn-sm',onClick:function(){if(confirm('删除任务「'+t.title+'」？')){deleteTask(t.id);re()}}},_s(S.trash)));
   right.appendChild(actions);
   row.appendChild(right);
