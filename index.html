@@ -314,7 +314,7 @@ function taskBody(){
     if(dateFilter&&t.date!==dateFilter)return false;
     return true
   });
-  tasks=tasks.filter(function(tk){var td=today();return!(tk.recurrence&&tk.date>td)});
+  tasks=tasks.filter(function(tk){var td=today();return tk.completed||!(tk.recurrence&&tk.date>td)});
   if(state.subNav==="all"){var seen={};tasks=tasks.filter(function(tk){if(tk.recurrence){var k=tk.title+"|"+(tk.setId||"");if(seen[k])return false;seen[k]=true}return true})}
   tasks.sort(function(a,b){
     if(a.completed!==b.completed)return a.completed?1:-1;
